@@ -44,7 +44,10 @@ pack:
 ## If you run the file you will get : When will you learn?
 First, we analyze the binary to locate the check_before_flag() function and its security check.
 
+```
 objdump -d main | grep -A 10 "check_before_flag"
+
+```
 
 Key Findings
 
@@ -82,8 +85,9 @@ OFFSET = -0x198
 ## we will search for e8 96 ff  ff ff and change it to  e8 68 fe ff ff 
 And save it.
 ## ./main
-
+```
  8049364:       e8 87 fd ff ff          call   80490f0 <__x86.get_pc_thunk.bx>
+```
 secarea@D1040H:~/cyber$ ./main
 
 SSS{i_told_you_strings_are_perilous}
