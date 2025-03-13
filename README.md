@@ -76,7 +76,7 @@ Analyse:
 
  strings get_flag.o 
  
-#objdump -d get_flag.o 
+objdump -d get_flag.o 
 
 
 ## hexedit get_flag.o
