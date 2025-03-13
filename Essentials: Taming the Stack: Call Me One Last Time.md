@@ -6,6 +6,7 @@ secarea@D1040H:~/cyber$ ./main
 
 
 ## First I modified the MakeFile such that:
+```
 
 OBJS = get_flag.o main.o
 
@@ -37,6 +38,8 @@ pack:
  
 
 .PHONY: all clean pack
+
+```
 
 ## If you run the file you will get : When will you learn?
 First, we analyze the binary to locate the check_before_flag() function and its security check.
