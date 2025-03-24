@@ -9,6 +9,10 @@ The vulnerable buffer is:
  Buffer overflow must be 32 + 8 = 40 bytes.
 
  Dupa gasim gadget-ul pop rdi : 
+
+ 
  secarea@D1040H:~/cyber$ ROPgadget --binary ./fibonacci | grep "pop rdi"
+ 
 0x00000000004007b3 : pop rdi ; ret
+
 secarea@D1040H:~/cyber$
