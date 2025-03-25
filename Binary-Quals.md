@@ -165,9 +165,6 @@ It has to have the structure : SSS{...}
 
 # Binary: Qualifiers: Pinpoint
 
-We run  strace -s 1000 ./pinpoint and we discover the output that we will get if we run ./pinpoint : address to write to: 
-The program might have a memory leak
-
 By running strings pinpoint | less -> we discover : 
 Found functions:
 __isoc99_scanf → Takes user input → might ask you for something
@@ -184,6 +181,23 @@ what we see:
 0000000000601020 R_X86_64_JUMP_SLOT  system@GLIBC_2.2.5
 0000000000601038 R_X86_64_JUMP_SLOT  setvbuf@GLIBC_2.2.5
 0000000000601040 R_X86_64_JUMP_SLOT  __isoc99_scanf@GLIBC_2.7
+
+##### From your nm pinpoint output:
+
+```
+
+system is imported (U system@@GLIBC_2.2.5)
+
+__stack_chk_fail is imported (U __stack_chk_fail@@GLIBC_2.4)
+
+__isoc99_scanf, printf, setvbuf, etc. are also imported
+
+main() is at 0x4006d6
+
+.got section starts at 0x601000
+
+
+```
 
 secarea@D1040H:~$ nc 141.85.224.99 31337
 
@@ -242,45 +256,74 @@ mirror-me
 SSS{Mirror_mirror_on_the_wall_who_is_the_fairest_of_them_all}
 
 
-#  Binary: Qualifiers: Not Backdoor
+# Binary: Qualifiers: Not Backdoor
 
 First observation : 
+
 secarea@D1040H:~/not-backdoor$ file not_backdoor.exe
+
 not_backdoor.exe: POSIX tar archive (GNU)
+
 secarea@D1040H:~/not-backdoor$
 
 #### file still claims it's a POSIX tar archive (GNU)`, not an actual executable.
+
 Running it with ./not_backdoor.exe gives:
+
 -bash: ./not_backdoor.exe: cannot execute binary file: Exec format error
+
 Which confirms: this isn’t a native executable for your current architecture (very likely, it's not an actual binary at all).
 
 -> It’s named .exe , file thinks it’s a tar archive, you can’t extract anything meaningful from it , it can’t run and it has no readable strings
+
 secarea@D1040H:~/not-backdoor$ mkdir ~/not-backdoor/extract
+
 secarea@D1040H:~/not-backdoor$ cd ~/not-backdoor/extract
+
 secarea@D1040H:~/not-backdoor/extract$ tar -xvf ../not_backdoor.exe
+
 not_backdoor
+
 secarea@D1040H:~/not-backdoor/extract$ ls -la
+
 total 16
+
 drwxr-xr-x 2 secarea secarea 4096 Mar 25 13:05 .
+
 drwxr-xr-x 3 secarea secarea 4096 Mar 25 13:04 ..
+
 -rwxr-xr-x 1 secarea secarea 6352 May 13  2018 not_backdoor
+
 secarea@D1040H:~/not-backdoor/extract$ file not_backdoor
-not_backdoor: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 2.6.32, BuildID[sha1]=0a442a1ee9e6b82be33c451203a9b2b8941347d1, stripped
+
+not_backdoor: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 2.6.32, BuildID[sha1]=0a442a1ee9e6b82be33c451203a9b2b8941347d1, 
+
+stripped
+
 secarea@D1040H:~/not-backdoor/extract$ chmod +x not_backdoor
+
 secarea@D1040H:~/not-backdoor/extract$ ./not_backdoor
 
 
-And we run : strace ./not_backdoor  -> This binary expects to be run with an argument. If you run it without one, it tries to output a hidden message to an invalid FD (maybe a joke or obfuscation technique).
+
+##### And we run : strace ./not_backdoor  -> This binary expects to be run with an argument. If you run it without one, it tries to output a hidden message to an invalid FD (maybe a joke or obfuscation technique).
+
 So , if we do : secarea@D1040H:~/not-backdoor/extract$ ./not_backdoor hello
+
 You chose flag no. 0; Here: <<<\
                                     _
 
 secarea@D1040H:~/not-backdoor/extract$ ./not_backdoor hello | xxd
+
+```
 00000000: 596f 7520 6368 6f73 6520 666c 6167 206e  You chose flag n
 00000010: 6f2e 2030 3b20 4865 7265 3a20 3c3c 3c14  o. 0; Here: <<<.
 00000020: 1f1d 5c1b 1b16 300c 5f01 190a            ..\...0._...
+```
 
 we write a python script and obtain :
+
+```
 data = bytes([0x14, 0x1f, 0x1d, 0x5c, 0x1b, 0x1b, 0x16, 0x30, 0x0c, 0x5f, 0x01, 0x19, 0x0a])
 
 for key in range(256):
@@ -291,6 +334,8 @@ for key in range(256):
             print(f"Key {key:02x}: {text}")
     except:
         continue
+```
+
 Key 2a: I_love_romanian_hackers :) 
 
 The binary maps the argument (likely parsed as an integer) to a flag index:
@@ -321,7 +366,49 @@ Flag #	Decoded Message
 19. cry_and_say_hi! ... I see :(
 
 
+## Binary Quals: The talker
+#### SSS{the_talker_has_spoken}
+strings the_talker | less ->  means: It uses network sockets (socket, sendto, htonl, htons). It reads and opens files. It sends data somewhere (probably a UDP client or similar).  sleep might suggest timing is relevant.  perror means errors could give hints.
+strace -> socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP) : This confirms the binary is trying to send something via UDP.
+##### strace ./the_talker -> A UDP socket is created. It attempts to open ../flag. If the file doesn't exist, it exits with: open: No such file or directory
+######  If ../flag exists, its content is read and sent via UDP to 127.0.0.1:4444.
+Therefore the binary tries to open a file located at ../flag AND fails if it doesn't find it AND does not proceed to network communication without that file
+ltrace: 
+It tries to connect to this IP: htonl(0x7f000001) → 127.0.0.1 → This is localhost.
 
+###### It uses this port: htons(4444) → 0x5c11 → So it's sending to UDP port 4444.  -> we will run : nc -ul 4444
+
+We have connected to the connect@141.85.224.99:2222 ssh and we are running commands like ls, whoami.
+By running cat script_d : script_d is an ELF executable 
+When we try to run it, we get this message : connect@2a9edac182d6:~/x$ ./script_d
+open: No such file or directory 
+-- 
+Just like the earlier binary (the_talker), this one is also trying to: 🔍 Open a specific file — probably expecting a flag input file
+
+We will try to do a fake flag so it can be opened: 
+
+connect@2a9edac182d6:~/x$ echo "test123"> flag
+
+connect@2a9edac182d6:~/x$ ./script_d
+
+After doing this, the script_d is working but it does not provide any output.
+
+Then , we do : We try to connect to the UDP listener. 
+
+connect@2a9edac182d6:~/x$ echo "SSS{hello_world}" > ../flag
+
+connect@2a9edac182d6:~/x$ ./script_d
+
+ls
+
+
+connect@2a9edac182d6:~/x$ ls
+
+flag  output.txt  script_d
+
+connect@2a9edac182d6:~/x$ nc -ul 4444
+
+SSS{the_talker_has_spoken}
 
 
 
