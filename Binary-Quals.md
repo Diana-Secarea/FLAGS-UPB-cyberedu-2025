@@ -239,6 +239,84 @@ mirror-me
 SSS{Mirror_mirror_on_the_wall_who_is_the_fairest_of_them_all}
 
 
+#  Binary: Qualifiers: Not Backdoor
+
+First observation : 
+secarea@D1040H:~/not-backdoor$ file not_backdoor.exe
+not_backdoor.exe: POSIX tar archive (GNU)
+secarea@D1040H:~/not-backdoor$
+
+#### file still claims it's a POSIX tar archive (GNU)`, not an actual executable.
+Running it with ./not_backdoor.exe gives:
+-bash: ./not_backdoor.exe: cannot execute binary file: Exec format error
+Which confirms: this isn’t a native executable for your current architecture (very likely, it's not an actual binary at all).
+
+-> It’s named .exe , file thinks it’s a tar archive, you can’t extract anything meaningful from it , it can’t run and it has no readable strings
+secarea@D1040H:~/not-backdoor$ mkdir ~/not-backdoor/extract
+secarea@D1040H:~/not-backdoor$ cd ~/not-backdoor/extract
+secarea@D1040H:~/not-backdoor/extract$ tar -xvf ../not_backdoor.exe
+not_backdoor
+secarea@D1040H:~/not-backdoor/extract$ ls -la
+total 16
+drwxr-xr-x 2 secarea secarea 4096 Mar 25 13:05 .
+drwxr-xr-x 3 secarea secarea 4096 Mar 25 13:04 ..
+-rwxr-xr-x 1 secarea secarea 6352 May 13  2018 not_backdoor
+secarea@D1040H:~/not-backdoor/extract$ file not_backdoor
+not_backdoor: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 2.6.32, BuildID[sha1]=0a442a1ee9e6b82be33c451203a9b2b8941347d1, stripped
+secarea@D1040H:~/not-backdoor/extract$ chmod +x not_backdoor
+secarea@D1040H:~/not-backdoor/extract$ ./not_backdoor
+
+
+And we run : strace ./not_backdoor  -> This binary expects to be run with an argument. If you run it without one, it tries to output a hidden message to an invalid FD (maybe a joke or obfuscation technique).
+So , if we do : secarea@D1040H:~/not-backdoor/extract$ ./not_backdoor hello
+You chose flag no. 0; Here: <<<\
+                                    _
+
+secarea@D1040H:~/not-backdoor/extract$ ./not_backdoor hello | xxd
+00000000: 596f 7520 6368 6f73 6520 666c 6167 206e  You chose flag n
+00000010: 6f2e 2030 3b20 4865 7265 3a20 3c3c 3c14  o. 0; Here: <<<.
+00000020: 1f1d 5c1b 1b16 300c 5f01 190a            ..\...0._...
+
+we write a python script and obtain :
+data = bytes([0x14, 0x1f, 0x1d, 0x5c, 0x1b, 0x1b, 0x16, 0x30, 0x0c, 0x5f, 0x01, 0x19, 0x0a])
+
+for key in range(256):
+    decoded = bytes([b ^ key for b in data])
+    try:
+        text = decoded.decode('utf-8')
+        if all(32 <= c <= 126 for c in decoded):  # Printable ASCII
+            print(f"Key {key:02x}: {text}")
+    except:
+        continue
+Key 2a: I_love_romanian_hackers :) 
+
+The binary maps the argument (likely parsed as an integer) to a flag index:
+./not_backdoor 0 → flag no. 0
+./not_backdoor 1 → flag no. 1
+./not_backdoor 2 → flag no. 2
+…up to ./not_backdoor 12
+Flag #	Decoded Message
+0	I_love_romanian_hackers
+1	You_want_more_?
+2	Hacking_is_an_art
+3	Flagz_are_4_fun
+4	(incomplete)
+5	Proudly_made_by_SEC
+6	Just_keep_going
+7	Backdoors_r_cool
+8	Hack_the_planet
+9	Don’t_trust_labels
+10	Try_harder_next
+11	Hackers_unite!
+12	Final_flag_is_near
+13. Never_gonna_give_u
+14. Never_gonna_let
+15. you_down_never_up
+16. gonna_run_around
+17. and_desert_you~!
+18. gonna_make_you
+19. cry_and_say_hi! ... I see :(
+
 
 
 
