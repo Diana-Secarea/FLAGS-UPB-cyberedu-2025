@@ -193,6 +193,9 @@ value to write: 6295584
 
 /bin/ls -la
 
+we see that:
+#### 400774: call 400580 <system@plt>
+
 secarea@D1040H:~$
 
 # Binary: Qualifiers: Mirror Me
