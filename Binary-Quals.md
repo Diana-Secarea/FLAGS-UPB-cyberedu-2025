@@ -1,5 +1,5 @@
-## Binary: Qualifiers: Black Hole
-"SSS{the_more_you_look_the_less_you_actually_see}"
+# Binary: Qualifiers: Black Hole
+#### "SSS{the_more_you_look_the_less_you_actually_see}"
 
 We start to run the program and we realise that :
 secarea@D1040H:~$ sudo whoami
@@ -71,8 +71,8 @@ exit_group(0)                           = ?
 
 secarea@D1040H:~/black-hole$  now we found the flag :)  SSS{the_more_you_look_the_less_you_actually_see}
 
-## Binary: Qualifiers: One by One
-
+# Binary: Qualifiers: One by One
+### dSoo{}o_lft_pk_chchbSi_laeS
 When we run strace : strings one_by_one | less
 
 ```bash
@@ -107,6 +107,7 @@ we try to run strace :
 
 secarea@D1040H:~/one-by-one$ strace -s 1000 ./one_by_one
 
+```
 execve("./one_by_one", ["./one_by_one"], 0x7fffe9e9a0d0 /* 27 vars */) = -1 EACCES (Permission denied)
 strace: exec: Permission denied
 +++ exited with 1 +++
@@ -155,12 +156,14 @@ write(1, "Hello, world!\n", 14Hello, world!
 )         = 14
 exit_group(0)                           = ?
 +++ exited with 0 +++
+```
+
 
 The raw string is  : dSoo{}o_lft_pk_chchbSi_laeS
 It has to have the structure : SSS{...}
 
 
-### Binary: Qualifiers: Pinpoint
+# Binary: Qualifiers: Pinpoint
 
 We run  strace -s 1000 ./pinpoint and we discover the output that we will get if we run ./pinpoint : address to write to: 
 The program might have a memory leak
@@ -183,10 +186,58 @@ what we see:
 0000000000601040 R_X86_64_JUMP_SLOT  __isoc99_scanf@GLIBC_2.7
 
 secarea@D1040H:~$ nc 141.85.224.99 31337
+
 address to write to: 6295616
+
 value to write: 6295584
+
 /bin/ls -la
+
 secarea@D1040H:~$
+
+# Binary: Qualifiers: Mirror Me
+#### SSS{Mirror_mirror_on_the_wall_who_is_the_fairest_of_them_all}
+
+If you run strings mirror-me and analyse you realise that you're supposed to input 3-digit numbers (probably two or three numbers), their product should equal a "maximum mirrored number".
+ a mirrored number usually refers to a number whose digits are reversed.
+If their product equals a mirrored number (palindromic), and it's the maximum, the binary gives access to the flag. 
+Internally, it calls system("/bin/sh") if the correct values are given.
+Additionally I wrote a script to find the largest palindrom number :
+
+```
+def is_mirrored(n):
+    return str(n) == str(n)[::-1]
+
+max_palindrome = 0
+best_pair = ()
+
+for i in range(100, 1000):
+    for j in range(i, 1000):
+        product = i * j
+        if is_mirrored(product) and product > max_palindrome:
+            max_palindrome = product
+            best_pair = (i, j)
+
+print(f"Combo: {best_pair}, Product: {max_palindrome}")
+
+```
+
+-> Combo: (913, 993), Product: 906609
+So we need to use 913 and 993 as inputs.
+So we connect to : secarea@D1040H:~$ nc 141.85.224.99 31338
+Insert the corect numbers in order to get the flag
+913
+993
+### Got a shell back as user ctf:
+Applied commands like whoami, ls, etc... then :
+
+#### ls /home/ctf
+flag
+mirror-me
+
+#### cat /home/ctf/flag
+SSS{Mirror_mirror_on_the_wall_who_is_the_fairest_of_them_all}
+
 
 
 
