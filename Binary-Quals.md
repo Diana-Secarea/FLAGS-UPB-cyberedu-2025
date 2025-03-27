@@ -257,7 +257,7 @@ SSS{Mirror_mirror_on_the_wall_who_is_the_fairest_of_them_all}
 
 
 # Binary: Qualifiers: Not Backdoor
-
+#### SSS{pr3tty_c0nvoluted_fl4g}
 First observation : 
 
 secarea@D1040H:~/not-backdoor$ file not_backdoor.exe
@@ -336,6 +336,9 @@ for key in range(256):
         continue
 ```
 
+Last part: 14 1f 1d 5c 1b 1b 16 30 0c 5f 01 19 -> {n0t_s0_s3cur3} which is not the flag
+Then we try flag 1: and we isolate the last bytes : 15 1e 1c 5d 1a 1a 17 31 0d 5e 0a - not a flag
+
 Key 2a: I_love_romanian_hackers :) 
 
 The binary maps the argument (likely parsed as an integer) to a flag index:
@@ -357,16 +360,70 @@ Flag #	Decoded Message
 10	Try_harder_next
 11	Hackers_unite!
 12	Final_flag_is_near
-13. Never_gonna_give_u
-14. Never_gonna_let
-15. you_down_never_up
-16. gonna_run_around
-17. and_desert_you~!
-18. gonna_make_you
-19. cry_and_say_hi! ... I see :(
+ ... I see
 
+ Well, ignoring that. I tried again this time with the initial decoding:
+ ```
 
-## Binary Quals: The talker
+ data = bytes([
+    0x11, 0x1a, 0x18, 0x59, 0x1e, 0x1e, 0x13, 0x35,
+    0x09, 0x5a, 0x04, 0x1c, 0x05, 0x06, 0x1f, 0x1e,
+    0x0f, 0x0e, 0x35, 0x0c, 0x06, 0x5e, 0x0d, 0x17,
+    0x6a, 0x0a
+])
+
+for key in range(256):
+    decoded = bytes([b ^ key for b in data])
+    try:
+        text = decoded.decode('utf-8')
+        if 'flag' in text or all(32 <= ord(c) < 127 for c in text):
+            print(f"[key={key:02x}] {text}")
+    except:
+        continue
+
+```
+### !!!!! I wrote a .py script:  !!!
+
+```
+import subprocess
+
+def xor_decode(data: bytes, key=0x55) -> str:
+    return ''.join(chr(b ^ key) for b in data)
+
+def extract_hidden_bytes(raw: bytes) -> bytes:
+    # Find the start of encoded section
+    marker = b"Here: "
+    start = raw.find(marker)
+    if start == -1:
+        return b""
+    return raw[start + len(marker):]
+
+def run_and_decode(flag_num: int):
+    try:
+        output = subprocess.check_output(["./not_backdoor", str(flag_num)])
+        encoded = extract_hidden_bytes(output)
+        decoded = xor_decode(encoded)
+        return encoded, decoded
+    except Exception as e:
+        return b"", f"[ERROR: {e}]"
+
+def main():
+    print(" Decoding all flags from 0 to 101...\n")
+    for i in range(0, 102):
+        encoded, decoded = run_and_decode(i)
+        hex_encoded = ' '.join(f'{b:02x}' for b in encoded)
+        print(f"[{i:03}] Encoded: {hex_encoded}")
+        print(f"      Decoded: {decoded}\n")
+
+if __name__ == "__main__":
+    main()
+
+```
+### And guess : around flag 58 after reading 57 jokes, the real flag appeared: 
+#### [ 058] Encoded: 06 06 06 2e 25 27 66 21 21 2c 0a 36 65 3b 23 3a 39 20 21 30 31 0a 33 39 61 32 28 55 0a
+ #####  Decoded: SSS{pr3tty_c0nvoluted_fl4g}_
+
+# Binary Quals: The talker
 #### SSS{the_talker_has_spoken}
 strings the_talker | less ->  means: It uses network sockets (socket, sendto, htonl, htons). It reads and opens files. It sends data somewhere (probably a UDP client or similar).  sleep might suggest timing is relevant.  perror means errors could give hints.
 strace -> socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP) : This confirms the binary is trying to send something via UDP.
