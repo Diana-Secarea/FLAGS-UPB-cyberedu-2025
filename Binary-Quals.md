@@ -1,3 +1,11 @@
+Final flags:
+1- "SSS{the_more_you_look_the_less_you_actually_see}
+2- 
+3-
+4- SSS{Mirror_mirror_on_the_wall_who_is_the_fairest_of_them_all}
+5- SSS{pr3tty_c0nvoluted_fl4g} 
+6-  SSS{the_talker_has_spoken}
+
 # Binary: Qualifiers: Black Hole
 #### "SSS{the_more_you_look_the_less_you_actually_see}"
 
