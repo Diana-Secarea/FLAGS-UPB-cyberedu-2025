@@ -219,6 +219,22 @@ we see that:
 #### 400774: call 400580 <system@plt>
 
 secarea@D1040H:~$
+secarea@D1040H:~/pinpoint$ readelf -r ./pinpoint
+
+Relocation section '.rela.dyn' at offset 0x478 contains 2 entries:
+  Offset          Info           Type           Sym. Value    Sym. Name + Addend
+000000600ff8  000500000006 R_X86_64_GLOB_DAT 0000000000000000 __gmon_start__ + 0
+000000601060  000800000005 R_X86_64_COPY     0000000000601060 stdout@GLIBC_2.2.5 + 0
+
+Relocation section '.rela.plt' at offset 0x4a8 contains 6 entries:
+  Offset          Info           Type           Sym. Value    Sym. Name + Addend
+000000601018  000100000007 R_X86_64_JUMP_SLO 0000000000000000 __stack_chk_fail@GLIBC_2.4 + 0
+000000601020  000200000007 R_X86_64_JUMP_SLO 0000000000000000 system@GLIBC_2.2.5 + 0
+000000601028  000300000007 R_X86_64_JUMP_SLO 0000000000000000 printf@GLIBC_2.2.5 + 0
+000000601030  000400000007 R_X86_64_JUMP_SLO 0000000000000000 __libc_start_main@GLIBC_2.2.5 + 0
+000000601038  000600000007 R_X86_64_JUMP_SLO 0000000000000000 setvbuf@GLIBC_2.2.5 + 0
+000000601040  000700000007 R_X86_64_JUMP_SLO 0000000000000000 __isoc99_scanf@GLIBC_2.7 + 0
+secarea@D1040H:~/pinpoint$
 
 # Binary: Qualifiers: Mirror Me
 #### SSS{Mirror_mirror_on_the_wall_who_is_the_fairest_of_them_all}
