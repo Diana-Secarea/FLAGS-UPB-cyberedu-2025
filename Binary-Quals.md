@@ -236,6 +236,11 @@ Relocation section '.rela.plt' at offset 0x4a8 contains 6 entries:
 000000601040  000700000007 R_X86_64_JUMP_SLO 0000000000000000 __isoc99_scanf@GLIBC_2.7 + 0
 secarea@D1040H:~/pinpoint$
 
+v (global variable)	0x601058	6299736	Controls the if (v == 0x53585353)
+"sh" string (literal)	0x400854	4195412	Found from strings -tx ./pinpoint  /bin/sh string
+system@plt	0x400580	4195840	Where PLT entry jumps to libc-resolved system()
+printf@GOT	0x601028	6299688	Good target to overwrite with system
+
 # Binary: Qualifiers: Mirror Me
 #### SSS{Mirror_mirror_on_the_wall_who_is_the_fairest_of_them_all}
 
