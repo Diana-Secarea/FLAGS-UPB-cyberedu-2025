@@ -1,7 +1,7 @@
 # Essentials: Taming the Stack: Call Me One Last Time
 secarea@D1040H:~/cyber$ ./main
 
-## SSS{i_told_you_strings_are_perilous}
+
 
 
 
