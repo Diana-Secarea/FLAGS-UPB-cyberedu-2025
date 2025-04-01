@@ -184,7 +184,7 @@ printf → Will print responses (could leak info)
 __stack_chk_fail → Stack protector is enabled, so classic buffer overflows might be detected
 
 setvbuf, stdout → Just standard IO handling
-This is the function : 
+This is the function , main , found in Ghidra : 
 ```
 undefined8 main(void)
 
@@ -211,6 +211,34 @@ undefined8 main(void)
   return 0;
 }
 ```
+Check sec tell us that:  So, RELRO (Relocation Read-Only) is a security measure that makes different sections of the binary read-only to protect against unauthorized writes. It has two modes: partial and full.
+
+Partial RELRO does not include the GOT (Global Offset Table), so it leaves it vulnerable to various attacks that can overwrite it.
+
+In this case, we have absolutely nothing to do with the GOT, so we don’t care about it.
+
+Next — Stack: Canary found
+
+The canary is a security measure implemented to protect against buffer overflow vulnerabilities.
+
+The stack of a program looks like this:
+
+|----------stack memory----------| (stack end) rbp | saved rip
+
+And when a canary is present, it’s placed before rbp.
+
+It’s obtained at the beginning of the function/program and is checked at the end.
+
+If the values match, then no overwrite of the saved return address has occurred.
+
+Otherwise, it means an overwrite has happened, and the program exits forcibly.
+
+###### In your case, the canary is retrieved at line 10: local_10 = (long)(in_FS_OFFSET + 0x28);
+
+And the check is done in the if at line 20. If they don’t match, _stack_chk_fail is called, and the program is forcibly terminated.
+
+###### Also we do not have PIE -> the addresses remain the same after one execution 
+
 Then we check for :
 ```
 DAT_0040084f                                    XREF[1]:     main:00400746(*)
