@@ -1,15 +1,6 @@
-Final flags:
-1- SSS{the_more_you_look_the_less_you_actually_see}
-2- SSS{a_chip_of_the_old_block}
-3-  SSS{aim_for_the_kill}
-4- SSS{Mirror_mirror_on_the_wall_who_is_the_fairest_of_them_all}
-5- SSS{pr3tty_c0nvoluted_fl4g} 
-6-  SSS{the_talker_has_spoken}
-
-You can find more solutions wrote by me on the main link: https://github.com/Diana-Secarea/FLAGS-UPB-cyberedu-2025/tree/main . Now let's get started..
 
 # Binary: Qualifiers: Black Hole
-#### "SSS{the_more_you_look_the_less_you_actually_see}"
+
 
 We start to run the program and we realise that :
 secarea@D1040H:~$ sudo whoami
@@ -75,18 +66,12 @@ brk(0x207a000)                          = 0x207a000
 openat(AT_FDCWD, "/dev/null", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 3
 newfstatat(3, "", {st_mode=S_IFCHR|0666, st_rdev=makedev(0x1, 0x3), ...}, AT_EMPTY_PATH) = 0
 ioctl(3, TCGETS, 0x7ffd14d6b0a0)        = -1 ENOTTY (Inappropriate ioctl for device)
-write(3, "SSS{the_more_you_look_the_less_you_actually_see}", 48) = 48
-close(3)                                = 0
-exit_group(0)                           = ?
-+++ exited with 0 +++
+
 ```
 
 
-secarea@D1040H:~/black-hole$  now we found the flag :)  SSS{the_more_you_look_the_less_you_actually_see}
-
-
 # Binary: Qualifiers: One by One
-### SSS{a_chip_of_the_old_block}
+
 
 It's a 64-bit ELF binary, dynamically linked.
 
@@ -225,10 +210,9 @@ print(flag)
 
 ```
 
-Therefore the flag is : SSS{a_chip_of_the_old_block}
 
 # Binary: Qualifiers: Pinpoint
-### SSS{aim_for_the_kill}
+
 By running strings pinpoint | less -> we discover : 
 Found functions:
 __isoc99_scanf → Takes user input → might ask you for something
@@ -367,17 +351,9 @@ var
 cd home
 ls
 ctf
-cat ctf
-cat: ctf: Is a directory
-cd ctf
-ls
-flag
-pinpoint
-cat flag
-SSS{aim_for_the_kill}
+
 
 # Binary: Qualifiers: Mirror Me
-#### SSS{Mirror_mirror_on_the_wall_who_is_the_fairest_of_them_all}
 
 If you run strings mirror-me and analyse you realise that you're supposed to input 3-digit numbers (probably two or three numbers), their product should equal a "maximum mirrored number".
  a mirrored number usually refers to a number whose digits are reversed.
@@ -420,11 +396,11 @@ flag
 mirror-me
 
 #### cat /home/ctf/flag
-SSS{Mirror_mirror_on_the_wall_who_is_the_fairest_of_them_all}
+
 
 
 # Binary: Qualifiers: Not Backdoor
-#### SSS{pr3tty_c0nvoluted_fl4g}
+
 First observation : 
 
 secarea@D1040H:~/not-backdoor$ file not_backdoor.exe
@@ -588,12 +564,12 @@ if __name__ == "__main__":
 ```
 ### And guess : around flag 58 after reading 57 jokes, the real flag appeared: 
 #### [ 058] Encoded: 06 06 06 2e 25 27 66 21 21 2c 0a 36 65 3b 23 3a 39 20 21 30 31 0a 33 39 61 32 28 55 0a
- #####  Decoded: SSS{pr3tty_c0nvoluted_fl4g}_
+
 
 
 
 # Binary Quals: The talker
-#### SSS{the_talker_has_spoken}
+
 strings the_talker | less ->  means: It uses network sockets (socket, sendto, htonl, htons). It reads and opens files. It sends data somewhere (probably a UDP client or similar).  sleep might suggest timing is relevant.  perror means errors could give hints.
 strace -> socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP) : This confirms the binary is trying to send something via UDP.
 ##### strace ./the_talker -> A UDP socket is created. It attempts to open ../flag. If the file doesn't exist, it exits with: open: No such file or directory
@@ -637,9 +613,7 @@ connect@2a9edac182d6:~/x$ ls
 
 flag  output.txt  script_d
 
-connect@2a9edac182d6:~/x$ nc -ul 4444
-
-SSS{the_talker_has_spoken}
+The flag was found if we set again the nc listener.
 
 
 
