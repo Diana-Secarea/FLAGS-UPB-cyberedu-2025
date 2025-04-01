@@ -19,8 +19,17 @@ root
 secarea@D1040H:~/black-hole$ file black_hole
 
 black_hole: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 2.6.32, BuildID[sha1]=6439cdadea41568aa86925beb0c82f9f1c01b56c, stripped
+Analysis:
 
-we run secarea@D1040H:~/black-hole$ strace ./black_hole and we realise that :  
+This is a 64-bit dynamically linked ELF binary, which uses standard libraries (libc).
+
+The binary is stripped, so symbol names (e.g., main, print_flag) are removed — we'll need to reverse statically or dynamically.
+
+The interpreter is set to /lib64/ld-linux-x86-64.so.2 — normal for dynamically linked binaries.
+
+we run secarea@D1040H:~/black-hole$ strace ./black_hole and we realise that : 
+We trace the file descriptor 3 earlier in the strace:
+##### openat(AT_FDCWD, "/dev/null", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 3
 #### write(3, "SSS{the_more_you_look_the_less_y"..., 48) = 48 and that the binary is writing this to /dev/null
 It is writing 48 characters therefore we need to extract all the strace, 
 ### we rneed to rerun strace with FULL capture like this:
@@ -73,8 +82,17 @@ exit_group(0)                           = ?
 
 secarea@D1040H:~/black-hole$  now we found the flag :)  SSS{the_more_you_look_the_less_you_actually_see}
 
+
 # Binary: Qualifiers: One by One
 ### SSS{a_chip_of_the_old_block}
+
+It's a 64-bit ELF binary, dynamically linked.
+
+Stripped: Symbol names like main, print_flag, etc., are removed.
+
+Likely requires static or dynamic reverse engineering techniques.
+
+
 When we run strace : strings one_by_one | less
 
 ```bash
@@ -162,6 +180,14 @@ exit_group(0)                           = ?
 
 The raw string is  : dSoo{}o_lft_pk_chchbSi_laeS
 It has to have the structure : SSS{...}
+
+We focus on:
+
+.rodata: for hardcoded strings.
+
+.data: for writable variables 
+
+main() or entry functions to trace the logic.
 
 Therefore we need to look in Ghidra at the section of rodata bc there is place the place where the input seem to be stored. Based on what I’ve found, it’s now very likely the flag is being assembled from those partXX values stored in .data at addresses like 0x00601038 to 0x00601053. The presence of puts("Hello, world!") is a decoy. But there might be another function called that: Iterates through a list of partXX
 and copies or prints them one-by-one :)
@@ -290,13 +316,10 @@ DAT_0040083a                                    XREF[1]:     main:00400721(*)
  ## the value that we needed to write is 88
  ## where do we need to write it? in  00601058 transformed in decimal plus +2 
  
-secarea@D1040H:~/pinpoint$ nc 141.85.224.99 31337
+ =secarea@D1040H:~/pinpoint$ nc 141.85.224.99 31337
 address to write to: 6291672
 value to write: 88
-ls
-secarea@D1040H:~/pinpoint$ nc 141.85.224.99 31337
-address to write to: 6291673
-value to write: 88
+=
 ls
 secarea@D1040H:~/pinpoint$ nc 141.85.224.99 31337
 address to write to: 6291673
@@ -347,6 +370,9 @@ SSS{aim_for_the_kill}
 
 If you run strings mirror-me and analyse you realise that you're supposed to input 3-digit numbers (probably two or three numbers), their product should equal a "maximum mirrored number".
  a mirrored number usually refers to a number whose digits are reversed.
+ Additionally, clues suggest that:
+A correct combination gives access to a shell (system("/bin/sh")).
+The final goal is to retrieve a flag file from the home directory of a user.
 If their product equals a mirrored number (palindromic), and it's the maximum, the binary gives access to the flag. 
 Internally, it calls system("/bin/sh") if the correct values are given.
 Additionally I wrote a script to find the largest palindrom number :
@@ -553,6 +579,8 @@ if __name__ == "__main__":
 #### [ 058] Encoded: 06 06 06 2e 25 27 66 21 21 2c 0a 36 65 3b 23 3a 39 20 21 30 31 0a 33 39 61 32 28 55 0a
  #####  Decoded: SSS{pr3tty_c0nvoluted_fl4g}_
 
+
+
 # Binary Quals: The talker
 #### SSS{the_talker_has_spoken}
 strings the_talker | less ->  means: It uses network sockets (socket, sendto, htonl, htons). It reads and opens files. It sends data somewhere (probably a UDP client or similar).  sleep might suggest timing is relevant.  perror means errors could give hints.
@@ -560,6 +588,9 @@ strace -> socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP) : This confirms the binary is
 ##### strace ./the_talker -> A UDP socket is created. It attempts to open ../flag. If the file doesn't exist, it exits with: open: No such file or directory
 ######  If ../flag exists, its content is read and sent via UDP to 127.0.0.1:4444.
 Therefore the binary tries to open a file located at ../flag AND fails if it doesn't find it AND does not proceed to network communication without that file
+
+This binary behaves like a UDP client sending file content to a local server. It doesn’t display output — instead, the message is sent silently over the network.
+
 ltrace: 
 It tries to connect to this IP: htonl(0x7f000001) → 127.0.0.1 → This is localhost.
 
@@ -570,15 +601,17 @@ By running cat script_d : script_d is an ELF executable
 When we try to run it, we get this message : connect@2a9edac182d6:~/x$ ./script_d
 open: No such file or directory 
 -- 
-Just like the earlier binary (the_talker), this one is also trying to: 🔍 Open a specific file — probably expecting a flag input file
+This is also trying to:  Open a specific file — probably expecting a flag input file
 
 We will try to do a fake flag so it can be opened: 
 
-connect@2a9edac182d6:~/x$ echo "test123"> flag
+#### connect@2a9edac182d6:~/x$ echo "test123"> flag
 
 connect@2a9edac182d6:~/x$ ./script_d
 
 After doing this, the script_d is working but it does not provide any output.
+
+#####  No visible output, means it likely sent data via UDP just like the local binary.
 
 Then , we do : We try to connect to the UDP listener. 
 
