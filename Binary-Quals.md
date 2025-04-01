@@ -163,7 +163,11 @@ exit_group(0)                           = ?
 The raw string is  : dSoo{}o_lft_pk_chchbSi_laeS
 It has to have the structure : SSS{...}
 
-Therefore we need to look in Ghidra at the section of rodata bc there is place the place where the input seem to be stored. Based on what I’ve found, it’s now very likely the flag is being assembled from those partXX values stored in .data at addresses like 0x00601038 to 0x00601053.
+Therefore we need to look in Ghidra at the section of rodata bc there is place the place where the input seem to be stored. Based on what I’ve found, it’s now very likely the flag is being assembled from those partXX values stored in .data at addresses like 0x00601038 to 0x00601053. The presence of puts("Hello, world!") is a decoy. But there might be another function called that: Iterates through a list of partXX
+and copies or prints them one-by-one :)
+After I entered in n the listing view, right-click an address like 0x00601038 and choose: References > Show References to Address then tried to access by clicking the function(s) that access these flag parts.
+
+Used XREF (cross-references) on any suspicious address like 0x00601038 (which is part20) to see which function reads from there.
 00601038 64              ; part20 -> 'd'
 00601039 53              ; part0  -> 'S'
 0060103a 6f              ; part24 -> 'o'
@@ -173,6 +177,9 @@ Therefore we need to look in Ghidra at the section of rodata bc there is place t
 0060103e 6f              ; part11 -> 'o'
 0060103f 5f              ; part13 -> '_'
 00601040 6c              ; part23 -> 'l'
+
+ I wrote each partN in sequence.
+ ###### Each partN is a char in memory at 0x00601038 + N , The binary likely prints or builds the flag using these in order
 
 We need to create a function that can store this flag in a consecuitve way such that it will start from part 0 and so on..
 parts = {
