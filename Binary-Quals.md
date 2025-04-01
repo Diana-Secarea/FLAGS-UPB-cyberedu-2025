@@ -208,6 +208,9 @@ Used XREF (cross-references) on any suspicious address like 0x00601038 (which is
  ###### Each partN is a char in memory at 0x00601038 + N , The binary likely prints or builds the flag using these in order
 
 We need to create a function that can store this flag in a consecuitve way such that it will start from part 0 and so on..
+
+
+```
 parts = {
     0: 'S', 1: 'S', 2: 'S', 3: '{', 4: 'a', 5: '_', 6: 'c', 7: 'h',
     8: 'i', 9: 'p', 10: '_', 11: 'o', 12: 'f', 13: '_', 14: 't', 15: 'h',
@@ -217,6 +220,8 @@ parts = {
 
 flag = ''.join([parts[i] for i in range(28)])
 print(flag)
+
+```
 
 Therefore the flag is : SSS{a_chip_of_the_old_block}
 
@@ -315,7 +320,9 @@ DAT_0040083a                                    XREF[1]:     main:00400721(*)
  ##  58 is in decimal 88
  ## the value that we needed to write is 88
  ## where do we need to write it? in  00601058 transformed in decimal plus +2 
+
  
+```
  =secarea@D1040H:~/pinpoint$ nc 141.85.224.99 31337
 address to write to: 6291672
 value to write: 88
@@ -329,6 +336,8 @@ secarea@D1040H:~/pinpoint$ nc 141.85.224.99 31337
 address to write to: 6295641
 value to write: 88
 ls
+
+```
 secarea@D1040H:~/pinpoint$ nc 141.85.224.99 31337
 ### address to write to: 6295642
 ### value to write: 88
