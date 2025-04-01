@@ -6,6 +6,8 @@ Final flags:
 5- SSS{pr3tty_c0nvoluted_fl4g} 
 6-  SSS{the_talker_has_spoken}
 
+You can find more solutions wrote by me on the main link: https://github.com/Diana-Secarea/FLAGS-UPB-cyberedu-2025/tree/main . Now let's get started..
+
 # Binary: Qualifiers: Black Hole
 #### "SSS{the_more_you_look_the_less_you_actually_see}"
 
