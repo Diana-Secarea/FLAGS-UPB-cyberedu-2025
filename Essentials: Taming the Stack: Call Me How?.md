@@ -1,7 +1,7 @@
 # FLAGS-UPB-cyberedu-2025
 # #1: Essentials: Taming the Stack: Call Me How?
 secarea@D1040H:~/cyber$ ./main
-SSS{there_can_be_no_wrong_arguments}
+
 
 
 
